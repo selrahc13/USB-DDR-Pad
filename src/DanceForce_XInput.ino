@@ -21,11 +21,11 @@
 
 //#define DEBUG_PINS // debug pin readings
 //#define DEBUG_DEBOUNCE // debug debounce timers
-#define DEBUG_VOLTAGE // debug pin voltages
-#define DEBUG_CALIBRATION // debug calibration routine
+//#define DEBUG_VOLTAGE // debug pin voltages
+//#define DEBUG_CALIBRATION // debug calibration routine
 
 #define DEBUG_DELAY 1
-#define SAMPLES 500
+#define SAMPLES 500 // number of samples required to successfully complete calibration
 
 //pin mappings for where things got soldered
 const int Pin_Up        = A0;
@@ -254,15 +254,21 @@ bool stateChanged(int buttonIndex, int debounceDelay) {
   return false;
 }
 
+// If you have a dodgy setup, calibration may never finish. Add a timer?
 void calibrate() {
-  Serial.println("Calibrating pad thresholds");
+  #if !defined (USB_XINPUT) && defined (DEBUG_PAD) && defined (DEBUG_CALIBRATION)
+    Serial.println("Calibrating pad thresholds");
+  #endif
   // Calibrate trigger thresholds per button
   // If something was sitting on a button when you plugged your controller in or reset it, shame on you... replug or reset to recalibrate
   int low[6] = {0};
   int hi[6] = {0};
-
-  for (int t = 0; t < SAMPLES; ++t) {
-    digitalWrite(LED, LOW);
+  
+  long calStart = millis();
+  int tries = 0;
+  int maxtries = 3; // try to calibrate up to this many times
+  
+  while (millis() - calStart < SAMPLES && tries < maxtries) {
     for (int i = 0; i < 6; ++i) {
       int val = analogRead(p[i]);
 
@@ -281,14 +287,16 @@ void calibrate() {
         delay(1);
       #endif
       // reset the calibration if there's too big of a gap between high and low values
-      if (hi[i] - low[i] >= 30) { 
+      // accept whatever values we end up with if we reach the maximum number of retries
+      // so we don't end up in a race condition
+      if (hi[i] - low[i] >= 30 && tries < maxtries) { 
         memset(low, 0, sizeof(low));
         memset(hi, 0, sizeof(low));
-        t = 0; 
         i = 0; 
+        calStart = millis();
+        tries++;
       } 
     }
-    digitalWrite(LED, HIGH);
   }
 
   for (int i = 0; i < 7; ++i) {
