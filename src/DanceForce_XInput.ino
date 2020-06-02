@@ -25,7 +25,7 @@
 //#define DEBUG_CALIBRATION // debug calibration routine
 
 #define DEBUG_DELAY 1
-#define SAMPLES 500 // number of samples required to successfully complete calibration
+#define SAMPLES 500 // how many ms to gather sample data for calibration
 
 //pin mappings for where things got soldered
 const int Pin_Up        = A0;
@@ -63,10 +63,10 @@ long calibrateTimer1 = 0;
 long calibrateTimer2 = 0;
 long lastCalibration = 0;
 
-//Trigger a button press event if the analog read < (analog read * tt)
-//<- 0 sensitivity 1.0 ->
 int tt[6] = {0};
-const float TriggerPercent = .20;
+// Set TriggerPercent to a whole number value between 0 and 100 to indicate how sensitive you want your pads to be
+// The higher the percentage, the more sensitive it will be. This will require some tuning depending on your setup.
+const float TriggerPercent = 80;
 
 // state vars
 //analog read values
@@ -254,9 +254,9 @@ bool stateChanged(int buttonIndex, int debounceDelay) {
   return false;
 }
 
-// If you have a dodgy setup, calibration may never finish. Add a timer?
 void calibrate() {
   #if !defined (USB_XINPUT) && defined (DEBUG_PAD) && defined (DEBUG_CALIBRATION)
+    delay(2000);
     Serial.println("Calibrating pad thresholds");
   #endif
   // Calibrate trigger thresholds per button
@@ -282,7 +282,7 @@ void calibrate() {
 
       #if !defined (USB_XINPUT) && defined (DEBUG_PAD) && defined (DEBUG_CALIBRATION)
         char buffer[80];
-        sprintf(buffer, "pass %d: idx: %d lo/hi: %d/%d", t, i, low[i], hi[i]);
+        sprintf(buffer, "time %lu: idx: %d lo/hi: %d/%d", millis() - calStart, i, low[i], hi[i]);
         Serial.println(buffer);
         delay(1);
       #endif
@@ -300,7 +300,7 @@ void calibrate() {
   }
 
   for (int i = 0; i < 7; ++i) {
-    tt[i] = low[i] * TriggerPercent;
+    tt[i] = low[i] * (1 - TriggerPercent / 100);
   }
   #if !defined (USB_XINPUT) && defined (DEBUG_PAD) && defined (DEBUG_CALIBRATION)
     char buffer[80];
