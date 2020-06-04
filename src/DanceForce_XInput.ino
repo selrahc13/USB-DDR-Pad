@@ -1,4 +1,3 @@
-
 /*  
  *  Charles Scheidecker for Sparkfun Pro Micro board with XInput support
  *  XInput support requires
@@ -10,11 +9,11 @@
  */
 
 // Choose either XInput.h or Joystick.h - not both
-//#include <XInput.h>
+#include <XInput.h>
 
 // Both Joystick.h and HID_Buttons.h are required if you want a standard joystick instead of XInput
-#include <Joystick.h>
-#include <HID_Buttons.h>
+//#include <Joystick.h>
+//#include <HID_Buttons.h>
 
 // Uncomment to enable debug printing
 //#define DEBUG_PAD
@@ -91,7 +90,7 @@ void setup() {
   
   calibrate();
 
-  #ifdef XINPUT_USB
+  #ifdef USB_XINPUT
     XInput.setAutoSend(true); // send presses immediately instead of as a batch
   
     XInput.begin();
@@ -118,7 +117,7 @@ void loop() {
     switch(p[i]) {
       case Pin_Up:
         if (stateChanged(i, debounceDelayPad)) {
-          #ifdef XINPUT_USB
+          #ifdef USB_XINPUT
             XInput.setButton(BUTTON_Y, s[i]);
           #endif
           #ifdef JOYSTICK_h
@@ -128,7 +127,7 @@ void loop() {
         break;
       case Pin_Right:
         if (stateChanged(i, debounceDelayPad)) {
-          #ifdef XINPUT_USB
+          #ifdef USB_XINPUT
             XInput.setButton(BUTTON_B, s[i]);
           #endif
           #ifdef JOYSTICK_h
@@ -138,7 +137,7 @@ void loop() {
         break;
       case Pin_Down:
         if (stateChanged(i, debounceDelayPad)) {
-          #ifdef XINPUT_USB
+          #ifdef USB_XINPUT
             XInput.setButton(BUTTON_A, s[i]);
           #endif
           #ifdef JOYSTICK_h
@@ -148,7 +147,7 @@ void loop() {
         break;
       case Pin_Left:
         if (stateChanged(i, debounceDelayPad)) {
-          #ifdef XINPUT_USB
+          #ifdef USB_XINPUT
             XInput.setButton(BUTTON_X, s[i]);
           #endif
           #ifdef JOYSTICK_h
@@ -158,7 +157,7 @@ void loop() {
         break;
       case Pin_Start:
         if (stateChanged(i, debounceDelayButton)) {
-          #ifdef XINPUT_USB
+          #ifdef USB_XINPUT
             XInput.setButton(BUTTON_START, s[i]);
           #endif
           #ifdef JOYSTICK_h
@@ -168,7 +167,7 @@ void loop() {
         break;
       case Pin_Back:
         if (stateChanged(i, debounceDelayButton)) {
-          #ifdef XINPUT_USB
+          #ifdef USB_XINPUT
             XInput.setButton(BUTTON_BACK, s[i]);
           #endif
           #ifdef JOYSTICK_h
